@@ -34,6 +34,16 @@
 
 namespace cass {
 
+//To avoid strict aliasing violations use a union to convert representations, most compilers
+//implement the ability to read inactive members of a union (as a non-standard language extension).
+union SafeCast
+{
+    int32_t int32_value_;
+    cass_int64_t int64_value_;
+    float float_value_;
+    double double_value_;
+};
+
 // http://commandcenter.blogspot.com/2012/04/byte-order-fallacy.html
 // This frees us from having to deal with endian stuff on every platform.
 // If it's not fast enough then we can go back to using the bytes swaps.
@@ -116,22 +126,32 @@ inline char* decode_int64(char* input, cass_int64_t& output) {
 
 inline void encode_float(char* output, float value) {
   BOOST_STATIC_ASSERT(std::numeric_limits<float>::is_iec559);
-  encode_int32(output, *copy_cast<float*, int32_t*>(&value));
+  SafeCast cast_value;
+  cast_value.float_value_ = value;
+  encode_int32(output, cast_value.int32_value_);
 }
 
 inline char* decode_float(char* input, float& output) {
   BOOST_STATIC_ASSERT(std::numeric_limits<float>::is_iec559);
-  return decode_int32(input, *copy_cast<float*, int32_t*>(&output));
+  SafeCast cast_value;
+  char* pos = decode_int32(input, cast_value.int32_value_);
+  output = cast_value.float_value_;
+  return pos;
 }
 
 inline void encode_double(char* output, double value) {
   BOOST_STATIC_ASSERT(std::numeric_limits<double>::is_iec559);
-  encode_int64(output, *copy_cast<double*, cass_int64_t*>(&value));
+  SafeCast cast_value;
+  cast_value.double_value_ = value;
+  encode_int64(output, cast_value.int64_value_);
 }
 
 inline char* decode_double(char* input, double& output) {
   BOOST_STATIC_ASSERT(std::numeric_limits<double>::is_iec559);
-  return decode_int64(input, *copy_cast<double*, cass_int64_t*>(&output));
+  SafeCast cast_value;
+  char* pos = decode_int64(input, cast_value.int64_value_);
+  output = cast_value.double_value_;
+  return pos;
 }
 
 inline char* decode_string(char* input, char** output, size_t& size) {
