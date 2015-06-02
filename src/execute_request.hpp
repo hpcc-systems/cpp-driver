@@ -43,12 +43,11 @@ public:
       }
   }
 
-  const std::string& query() const { return prepared_->id(); }
   const SharedRefPtr<const Prepared>& prepared() const { return prepared_; }
 
 private:
   virtual size_t get_indices(StringRef name,
-                             HashIndex::IndexVec* indices) const {
+                             HashIndex::IndexVec* indices) {
     return metadata_->get_indices(name, indices);
   }
 
@@ -56,10 +55,12 @@ private:
     return metadata_->get_column_definition(index).data_type;
   }
 
+  virtual int32_t encode_batch(int version, BufferVec* bufs) const;
+
 private:
   int encode(int version, BufferVec* bufs) const;
-  int encode_v1(BufferVec* bufs) const;
-  int encode(BufferVec* bufs) const;
+  int internal_encode_v1(BufferVec* bufs) const;
+  int internal_encode(int version, BufferVec* bufs) const;
 
 private:
   SharedRefPtr<const Prepared> prepared_;
