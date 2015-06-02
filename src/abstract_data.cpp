@@ -21,6 +21,14 @@
 
 namespace cass {
 
+CassError AbstractData::set(size_t index, CassCustom custom) {
+  CASS_CHECK_INDEX_AND_TYPE(index, custom);
+  Buffer buf(custom.output_size);
+  buffers_[index] = buf;
+  *(custom.output) = reinterpret_cast<uint8_t*>(buf.data());
+  return CASS_OK;
+}
+
 CassError AbstractData::set(size_t index, const Collection* value) {
   CASS_CHECK_INDEX_AND_TYPE(index, value);
   if (value->type() == CASS_COLLECTION_TYPE_MAP &&
@@ -28,14 +36,6 @@ CassError AbstractData::set(size_t index, const Collection* value) {
     return CASS_ERROR_LIB_INVALID_ITEM_COUNT;
   }
   buffers_[index] = value->encode_with_length();
-  return CASS_OK;
-}
-
-CassError AbstractData::set(size_t index, CassCustom custom) {
-  CASS_CHECK_INDEX_AND_TYPE(index, custom);
-  Buffer buf(custom.output_size);
-  buffers_[index] = buf;
-  *(custom.output) = reinterpret_cast<uint8_t*>(buf.data());
   return CASS_OK;
 }
 
