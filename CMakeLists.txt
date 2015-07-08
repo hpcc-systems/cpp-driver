@@ -422,6 +422,23 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # I disabled long-long warning because boost generates about 50 such warnings
   set(WARNING_COMPILER_FLAGS "-Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter -Wno-variadic-macros -Wno-zero-length-array")
 
+  # Detect if this is Apple's clang
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} -v ERROR_VARIABLE CASS_CLANG_VERSION_INFO)
+  if (${CASS_CLANG_VERSION_INFO} MATCHES "Apple LLVM version ([0-9]+\\.[0-9]+\\.[0-9]+).*")
+    string (REGEX REPLACE "Apple LLVM version ([0-9]+\\.[0-9]+\\.[0-9]+).*" "\\1" APPLE_CLANG_VERSION ${CASS_CLANG_VERSION_INFO})
+  endif()
+  if (${clang_full_version_string} MATCHES ".*based on LLVM ([0-9]+\\.[0-9]+).*")
+    string (REGEX REPLACE ".*based on LLVM ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION ${CASS_CLANG_VERSION_INFO})
+  else()
+    if (${clang_full_version_string} MATCHES ".*clang version ([0-9]+\\.[0-9]+).*")
+      string (REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION ${CASS_CLANG_VERSION_INFO})
+    endif()
+  endif()
+
+  if (CLANG_VERSION VERSION_GREATER 3.6 OR CLANG_VERSION VERSION_EQUAL 3.6 OR APPLE_CLANG_VERSION VERSION_GREATER 6.0)
+    set(WARNING_COMPILER_FLAGS "${WARNING_COMPILER_FLAGS} -Wno-unused-local-typedef ")
+  endif()
+
   # OpenSSL is deprecated on later versions of Mac OS X. The long-term solution
   # is to provide a CommonCryto implementation.
   if (APPLE AND CASS_USE_OPENSSL)
