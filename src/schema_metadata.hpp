@@ -213,16 +213,33 @@ private:
   TableMetadata::Map tables_;
 };
 
+class FunctionMetadata {
+public:
+  typedef std::map<std::string,  FunctionMetadata> Map;
+  typedef std::vector<SharedRefPtr<DataType> > ArgTypeVector;
+
+  FunctionMetadata() { }
+  FunctionMetadata(StringRef name, const StringRefVec& arg_types)
+    : name(name.to_string()) {
+  }
+
+private:
+  std::string name;
+  ArgTypeVector arg_types_;
+};
+
 class Schema {
 public:
   typedef SchemaMetadataIteratorImpl<KeyspaceMetadata> KeyspaceIterator;
   typedef std::map<std::string, KeyspaceMetadata*> KeyspacePointerMap;
   typedef std::map<std::string, SharedRefPtr<UserType> > UserTypeMap;
-  typedef std::map<std::string,  UserTypeMap> KeyspaceUserTypeMap;
+  typedef std::map<std::string, UserTypeMap> KeyspaceUserTypeMap;
 
   Schema()
     : keyspaces_(new KeyspaceMetadata::Map)
     , user_types_(new KeyspaceUserTypeMap)
+    , functions_(new FunctionMetadata::Map)
+    , aggregates_(new FunctionMetadata::Map)
     , protocol_version_(0) {}
 
   void set_protocol_version(int version) {
@@ -239,6 +256,8 @@ public:
   KeyspacePointerMap update_keyspaces(ResultResponse* result);
   void update_tables(ResultResponse* table_result, ResultResponse* col_result);
   void update_usertypes(ResultResponse* usertypes_result);
+  void update_functions(ResultResponse* functions_result);
+  void update_aggregates(ResultResponse* aggregates_result);
   void drop_keyspace(const std::string& keyspace_name);
   void drop_table(const std::string& keyspace_name, const std::string& table_name);
   void drop_type(const std::string& keyspace_name, const std::string& type_name);
@@ -255,6 +274,8 @@ private:
   // more fine grain, but it might not be worth the work.
   CopyOnWritePtr<KeyspaceMetadata::Map> keyspaces_;
   CopyOnWritePtr<KeyspaceUserTypeMap> user_types_;
+  CopyOnWritePtr<FunctionMetadata::Map> functions_;
+  CopyOnWritePtr<FunctionMetadata::Map> aggregates_;
 
   // Only used internally on a single thread, there's
   // no need for copy-on-write.

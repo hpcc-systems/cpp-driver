@@ -291,6 +291,17 @@ void Schema::update_usertypes(ResultResponse* usertypes_result) {
   }
 }
 
+void Schema::update_functions(ResultResponse* functions_result) {
+  functions_result->decode_first_row();
+  ResultIterator rows(functions_result);
+
+  while (rows.next()) {
+  }
+}
+
+void Schema::update_aggregates(ResultResponse* aggregates_result) {
+}
+
 void Schema::update_columns(ResultResponse* result) {
   SharedRefPtr<RefBuffer> buffer = result->buffer();
 
