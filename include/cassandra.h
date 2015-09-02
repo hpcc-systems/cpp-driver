@@ -288,6 +288,16 @@ typedef struct CassValue_ CassValue;
 typedef struct CassDataType_ CassDataType;
 
 /**
+ * @struct CassFunctionType
+ */
+typedef struct CassFunctionMeta_ CassFunctionMeta;
+
+/**
+ * @struct CassAggregateType
+ */
+typedef struct CassAggregateMeta_ CassAggregateMeta;
+
+/**
  * @struct CassCollection
  *
  *  A collection of values.
@@ -3554,6 +3564,45 @@ cass_data_type_add_sub_value_type_by_name_n(CassDataType* data_type,
                                             const char* name,
                                             size_t name_length,
                                             CassValueType sub_value_type);
+
+/***********************************************************************************
+ *
+ * Function type
+ *
+ ***********************************************************************************/
+
+CASS_EXPORT CassError
+cass_function_type_name(const CassFunctionType* function_type,
+                        const char** name,
+                        size_t* name_length);
+
+CASS_EXPORT CassError
+cass_function_type_keyspace(const CassFunctionType* function_type,
+                            const char** keyspace,
+                            size_t* keyspace_length);
+
+CASS_EXPORT size_t
+cass_function_argument_count(const CassFunctionType* function);
+
+CASS_EXPORT const CassDataType*
+cass_function_argument_type(const CassFunctionType* function,
+                             size_t index);
+
+CASS_EXPORT CassError
+cass_function_argument_name(const CassFunctionType* function,
+                             size_t index,
+                             const char** name,
+                             size_t* name_length);
+
+CASS_EXPORT const CassDataType*
+cass_function_return_type(const CassFunctionType* function);
+
+/***********************************************************************************
+ *
+ * Aggregate type
+ *
+ ***********************************************************************************/
+
 
 /***********************************************************************************
  *

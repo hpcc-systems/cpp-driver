@@ -213,19 +213,63 @@ private:
   TableMetadata::Map tables_;
 };
 
-class FunctionMetadata {
+class Signature {
 public:
-  typedef std::map<std::string,  FunctionMetadata> Map;
-  typedef std::vector<SharedRefPtr<DataType> > ArgTypeVector;
+  Signature(const SharedRefPtr<RefBuffer>& buffer,
+            const StringRefVec& arg_types)
+    : buffer_(buffer)
+    , arg_types_(arg_types) { }
 
-  FunctionMetadata() { }
-  FunctionMetadata(StringRef name, const StringRefVec& arg_types)
-    : name(name.to_string()) {
+  bool operator<(const Signature& other) const {
+    if (arg_types_.size() != other.arg_types_.size()) {
+      return arg_types_.size() < other.arg_types_.size();
+    }
+    for (size_t i = 0, size = arg_types_.size(); i < size; ++i) {
+      int result = arg_types_[i].compare(other.arg_types_[i]);
+      if (result < 0) {
+        return true;
+      } else if (result > 0) {
+        return false;
+      }
+    }
+    return false;
   }
 
 private:
+  SharedRefPtr<RefBuffer> buffer_;
+  StringRefVec arg_types_;
+};
+
+class FunctionMetadata {
+public:
+  struct Argument {
+    StringRef name;
+    SharedRefPtr<DataType> type;
+  };
+  typedef std::vector<Argument> ArgumentVec;
+  typedef std::map<Signature, FunctionMetadata> SignatureMap;
+  typedef std::map<std::string, SignatureMap> Map;
+
+  FunctionMetadata(const SharedRefPtr<RefBuffer>& buffer,
+                   StringRef name,
+                   const Value* arguments,
+                   StringRef return_type);
+
+private:
+  SharedRefPtr<RefBuffer> buffer_;
+  StringRef name_;
+  ArgumentVec arguments_;
+  SharedRefPtr<DataType> return_type_;
+};
+
+class AggregateMetadata {
+public:
+  typedef std::map<Signature, FunctionMetadata> SignatureMap;
+  typedef std::map<std::string, SignatureMap> Map;
+
   std::string name;
-  ArgTypeVector arg_types_;
+  SharedRefPtr<DataType> return_type;
+  DataTypeVec arg_types;
 };
 
 class Schema {
@@ -239,7 +283,7 @@ public:
     : keyspaces_(new KeyspaceMetadata::Map)
     , user_types_(new KeyspaceUserTypeMap)
     , functions_(new FunctionMetadata::Map)
-    , aggregates_(new FunctionMetadata::Map)
+    , aggregates_(new AggregateMetadata::Map)
     , protocol_version_(0) {}
 
   void set_protocol_version(int version) {
@@ -275,7 +319,7 @@ private:
   CopyOnWritePtr<KeyspaceMetadata::Map> keyspaces_;
   CopyOnWritePtr<KeyspaceUserTypeMap> user_types_;
   CopyOnWritePtr<FunctionMetadata::Map> functions_;
-  CopyOnWritePtr<FunctionMetadata::Map> aggregates_;
+  CopyOnWritePtr<AggregateMetadata::Map> aggregates_;
 
   // Only used internally on a single thread, there's
   // no need for copy-on-write.

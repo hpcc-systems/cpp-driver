@@ -101,7 +101,7 @@ bool EventResponse::decode(int version, char* buffer, size_t size) {
         decode_string(pos, &target_);
       } else if (schema_change_target_ == FUNCTION ||
                  schema_change_target_ == AGGREGATE) {
-        decode_string(pos, &target_);
+        pos = decode_string(pos, &target_);
         decode_stringlist(pos, arg_types_);
       }
     }

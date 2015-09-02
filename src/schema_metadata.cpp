@@ -291,15 +291,54 @@ void Schema::update_usertypes(ResultResponse* usertypes_result) {
   }
 }
 
+Signature build_signature(const SharedRefPtr<RefBuffer>& buffer,
+                          const Value* signature_value) {
+  CollectionIterator iterator(signature_value);
+  StringRefVec arg_types;
+  while (iterator.next()) {
+    arg_types.push_back(iterator.value()->to_string_ref());
+  }
+  return Signature(buffer, arg_types);
+}
+
+FunctionMetadata(const SharedRefPtr<RefBuffer>& buffer,
+                 StringRef name,
+                 const Value* arguments,
+                 StringRef return_type)
+  : name(name) {
+  TypeParser
+}
+
 void Schema::update_functions(ResultResponse* functions_result) {
   functions_result->decode_first_row();
   ResultIterator rows(functions_result);
 
   while (rows.next()) {
+    std::string keyspace_name;
+    std::string function_name;
+    const Row* row = rows.row();
+
+    const Value* signature_value = row->get_by_name("signature");
+    if (!row->get_string_by_name("keyspace_name", &keyspace_name) ||
+        !row->get_string_by_name("function_name", &function_name) ||
+        signature_value == NULL) {
+      LOG_ERROR("Unable to column value for 'keyspace_name', 'function_name' or 'signature'");
+      continue;
+    }
+
+    Signature signature(build_signature(functions_result->buffer(), signature_value));
+
+
+
   }
 }
 
 void Schema::update_aggregates(ResultResponse* aggregates_result) {
+  aggregates_result->decode_first_row();
+  ResultIterator rows(aggregates_result);
+
+  while (rows.next()) {
+  }
 }
 
 void Schema::update_columns(ResultResponse* result) {
