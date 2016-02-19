@@ -462,9 +462,9 @@ endif()
 # Cassandra static and shared
 #------------------------------
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 # Gather the header and source files
 file(GLOB API_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/*.h)
@@ -523,7 +523,7 @@ if(NOT CMAKE_VERSION VERSION_LESS "2.8.8")
 
   # Build both shared and static libraries
   set(CASS_BUILD_SHARED ON)
-  set(CASS_BUILD_STATIC ON)
+  #set(CASS_BUILD_STATIC ON)
 endif()
 
 # Assign the include directories
@@ -537,8 +537,8 @@ if(CASS_BUILD_SHARED)
     add_library(${PROJECT_LIB_NAME} SHARED $<TARGET_OBJECTS:cpp-driver>)
   endif()
   target_link_libraries(${PROJECT_LIB_NAME} ${CASS_LIBS})
-  set_target_properties(${PROJECT_LIB_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_LIB_NAME})
-  set_target_properties(${PROJECT_LIB_NAME} PROPERTIES VERSION ${PROJECT_VERSION_STRING} SOVERSION ${PROJECT_VERSION_MAJOR})
+  #set_target_properties(${PROJECT_LIB_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_LIB_NAME})
+  #set_target_properties(${PROJECT_LIB_NAME} PROPERTIES VERSION ${PROJECT_VERSION_STRING} SOVERSION ${PROJECT_VERSION_MAJOR})
   set_target_properties(${PROJECT_LIB_NAME} PROPERTIES LINK_FLAGS "${PROJECT_CXX_LINKER_FLAGS}")
   set_property(
     TARGET ${PROJECT_LIB_NAME}
@@ -636,10 +636,10 @@ endif()
 
 # Install the dynamic/shared library
 if(CASS_BUILD_SHARED)
-  install(TARGETS ${PROJECT_LIB_NAME}
-    RUNTIME DESTINATION ${INSTALL_DLL_EXE_DIR}  # for dll/executable files
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}  # for shared library
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}) # for static library
+    install(
+        TARGETS ${PROJECT_LIB_NAME}
+        DESTINATION ${LIB_DIR} 
+        COMPONENT Runtime)
 endif()
 
 # Install the static library
