@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.6.4)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 # Ensure functions/modules are available
-set(CASS_ROOT_DIR ${CMAKE_SOURCE_DIR})
+if (NOT CASS_ROOT_DIR)
+  set(CASS_ROOT_DIR ${CMAKE_SOURCE_DIR})
+endif()
 set(CASS_SRC_DIR "${CASS_ROOT_DIR}/src")
 set(CASS_INCLUDE_DIR "${CASS_ROOT_DIR}/include")
 list(APPEND CMAKE_MODULE_PATH ${CASS_ROOT_DIR}/cmake/modules)
